@@ -1,8 +1,8 @@
+#!/usr/bin/python
 # Simple script to collect data from a 1wire sensor on a Raspberry Pi and submit to Cloudwatch
 # You'll need to set up AWS Cloudwatch and your AWS/boto credentials
 # and probably modify the device path.
 
-#!/usr/bin/python
 import time
 import boto3
 
