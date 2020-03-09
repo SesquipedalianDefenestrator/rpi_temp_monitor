@@ -19,7 +19,7 @@ The DHT22 I switched to later:  https://www.amazon.com/gp/product/B073F472JL/
 In both cases, you'll need to connect the sensor to:
 * A 3.3V pin for power (pin 1 or 17 on RPI Zero W)
 * A ground pin (I used pin6, but there are several)
-* A GPIO pin. I used GPIO4 (pin7), then when I switched to a pair of DHT22 used GPIO4 and 24 (pin7 and pin18).
+* A GPIO pin for data. I used GPIO4 (pin7), then when I switched to a pair of DHT22 used GPIO4 and 24 (pin7 and pin18).
 If you don't buy one with a buit-in pull-up resistor, you'll need to connect a 4.7KOhm or 10KOhm (there seems to be some question as to which is better, but the details are beyond my circuit design experience) between the GPIO wire and the power wire.  
 If you're doing a longer wiring run and having trouble, you can try switching to the 5V power output on pin 2 or 4 (both sensors can do 3.3V-5V power input).
 
@@ -28,12 +28,12 @@ This link has a good pinout diagram:  https://pinout.xyz/pinout/1_wire
 ### Reading the sensors
 For the DS18B20, you'll have to add a line in /boot/config.txt to enable 1-wire:
 `dtoverlay=w1-gpio`
-This defaults to GPIO4 (pin 7), but you can also specify:
+This defaults to GPIO4 (pin 7), but you can also specify a different one:
 `dtoverlay=w1-gpio,gpiopin=24`
-Then load the w1-gpio and w1-therm modules (with modprobe, then put them in /etc/modules for future boots)
-Then you can scrape the file at /sys/devices/w1_bus_master1/<id>>/w1_slave to get the data.
+Then load the w1-gpio and w1-therm modules (with modprobe, then put them in /etc/modules for future boots).
+Then you can scrape the file at /sys/devices/w1_bus_master1/28-<id>/w1_slave to get the data.  The second line output will end with something like `t=27352`, which means 27.352C. 
 
-For the DHT22, it's a bit simpler:  Use the Adafruit_DHT22 library in Python to get the temperature and humidity data.  No separate kernel modules or boot parameters.
+For the DHT22, it's a bit simpler:  Use the Adafruit_DHT22 library in Python to get the temperature (in degrees C) and relative humidity data.  No separate kernel modules or boot parameters.
 
 ### Viewing the data
 This assumes you've already got some sort of internet set up for the RPI, whether hard-wired ethernet, wifi, or directly via something like a "4G hat".
