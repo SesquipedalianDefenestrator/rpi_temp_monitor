@@ -1,6 +1,6 @@
 # Raspberry Pi temperature monitoring
 
-This writeup is intended for people with some knowledge of Linux and Python.  If that sounds daunting rather than fun, there's simpler options like the PetSafety monitors: https://www.amazon.com/RV-PetSafety-Monitor-Lite-app/dp/B07SGCYMGN
+This writeup is intended for people with some knowledge of Linux and Python.  If that sounds daunting rather than fun, there's simpler options like the PetSafety monitors: https://www.amazon.com/RV-PetSafety-Monitor-Lite-app/dp/B07SGCYMGN or Marcell: https://www.amazon.com/Sensored-MAR-500A-Marcel-Cellular-Monitoring/dp/B00QRMFEAQ
 
 In my case, I used a Raspberry Pi Zero W for low power consumption and small size, but probably any Pi would do, or any similar device with GPIO type capabilities.  I also wanted Bluetooth to talk to Victron devices, but that didn't work out (their stuff is good about speaking Modbus-over-TCP via wifi/ethernet if you buy their GX gear, but they haven't standardized any of their bluetooth protocols.
 
