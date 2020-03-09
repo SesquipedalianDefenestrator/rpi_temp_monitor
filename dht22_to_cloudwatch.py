@@ -8,22 +8,29 @@ import time
 import boto3
 import Adafruit_DHT
 
-def submit_metric(cw, name, value):
-    ret = cw.put_metric_data(Namespace='trailer', MetricData=[{'MetricName': name, 'Value': value }])
+cw_namespace = 'trailer'
+
+
+def submit_metrics(metrics):
+    cw = boto3.client('cloudwatch')
+    ret = cw.put_metric_data(cw_namespace, MetricData=metrics)
     if ret['ResponseMetadata']['HTTPStatusCode'] != 200:
-        print("Failed to submit %s." % name)
+        print("Failed to submit metrics:")
+        print(metrics)
+        print("response:")
         print(ret)
 
 
 def dht_to_cw():
-    cw = boto3.client('cloudwatch')
+    MetricData = []
     humidity, temp_c = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 4)
     temp_f = 1.8 * temp_c + 32
-    submit_metric(cw, 'trailerTemp', temp_f)
-    submit_metric(cw, 'trailerHumidity', humidity)
+    MetricData.append({'MetricName': 'trailerTemp', 'Value': temp_f})
+    MetricData.append({'MetricName': 'trailerHumidity', 'Value': humidity})
     tank_humidity, tank_temp_c = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 24)
     tank_temp_f = 1.8 * tank_temp_c + 32
-    submit_metric(cw, 'tankTemp', tank_temp_f)
-    submit_metric(cw, 'tankHumidity', tank_humidity)
+    MetricData.append({'MetricName': 'tankTemp', 'Value': tank_temp_f})
+    MetricData.append({'MetricName': 'tankHumidity', 'Value': tank_humidity})
+    submit_metrics(MetricData)
 
 dht_to_cw()
