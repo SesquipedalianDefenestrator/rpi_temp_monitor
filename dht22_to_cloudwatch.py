@@ -13,7 +13,7 @@ cw_namespace = 'trailer'
 
 def submit_metrics(metrics):
     cw = boto3.client('cloudwatch')
-    ret = cw.put_metric_data(cw_namespace, MetricData=metrics)
+    ret = cw.put_metric_data(Namespace=cw_namespace, MetricData=metrics)
     if ret['ResponseMetadata']['HTTPStatusCode'] != 200:
         print("Failed to submit metrics:")
         print(metrics)
