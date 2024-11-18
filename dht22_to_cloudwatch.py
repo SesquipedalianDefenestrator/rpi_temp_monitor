@@ -1,14 +1,16 @@
 #!/usr/bin/python3
 # Simple script to collect data from a couple dht22 sensors on a Raspberry Pi and submit to Cloudwatch
 # You'll need to set up AWS Cloudwatch and your AWS/boto credentials
-# plus the Adafruit_DHT library
-# metrics and sensors are hard-coded, but the 2nd param to read_retry() is the GIO pin #
+# plus the CircuitPython adafruit_dht library
+# substitute pin IDs as appropriate
 
 import time
 import boto3
-import Adafruit_DHT
+import adafruit_dht
+import board
 
 cw_namespace = 'trailer'
+RETRY_WAIT = 0.1
 
 
 def submit_metrics(metrics):
@@ -20,15 +22,58 @@ def submit_metrics(metrics):
         print("response:")
         print(ret)
 
-
+def get_values_with_retry(pin_id):
+# Sometimes, this fails.. a lot.  Waiting sometimes helps
+# Sometimes it throws an Exception, sometimes it just returns None.
+# I suspect using pulseio would fix that, but it pegs
+# CPU forever with a realtime process so it's not useful
+# on a single-core PiZeroW
+    dhtDevice = adafruit_dht.DHT22(pin_id, use_pulseio=False)
+    for i in range(1,10):
+        try:
+            temp_c = dhtDevice.temperature
+            if temp_c == None:
+                time.sleep(RETRY_WAIT)
+                continue
+            break
+        except RuntimeError as e:
+            if (i <= 9):
+                time.sleep(RETRY_WAIT)
+                continue
+            else:
+                raise e
+    for i in range(1,10):
+        try:
+            humidity = dhtDevice.humidity
+            if humidity == None:
+                time.sleep(RETRY_WAIT)
+                continue
+            break
+        except RuntimeError as e:
+            if (i <= 9):
+                time.sleep(RETRY_WAIT)
+                continue
+            else:
+                raise e
+    temp_f = 1.8 * temp_c + 32
+    return (temp_f, humidity)
+            
 def dht_to_cw():
     MetricData = []
-    humidity, temp_c = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 4)
-    temp_f = 1.8 * temp_c + 32
+    for i in range(1,10):
+        try:
+            temp_f, humidity = get_values_with_retry(board.D17)
+            break
+        except TypeError:
+            continue
     MetricData.append({'MetricName': 'trailerTemp', 'Value': temp_f})
     MetricData.append({'MetricName': 'trailerHumidity', 'Value': humidity})
-    tank_humidity, tank_temp_c = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, 24)
-    tank_temp_f = 1.8 * tank_temp_c + 32
+    for i in range(1,10):
+        try:
+            tank_temp_f, tank_humidity = get_values_with_retry(board.D24)
+            break
+        except TypeError:
+            continue
     MetricData.append({'MetricName': 'tankTemp', 'Value': tank_temp_f})
     MetricData.append({'MetricName': 'tankHumidity', 'Value': tank_humidity})
     submit_metrics(MetricData)
