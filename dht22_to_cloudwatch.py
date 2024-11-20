@@ -23,12 +23,12 @@ def submit_metrics(metrics):
         print(ret)
 
 def get_values_with_retry(pin_id):
-# Sometimes, this fails.. a lot.  Waiting sometimes helps
-# Sometimes it throws an Exception, sometimes it just returns None.
-# I suspect using pulseio would fix that, but it pegs
-# CPU forever with a realtime process so it's not useful
-# on a single-core PiZeroW
-    dhtDevice = adafruit_dht.DHT22(pin_id, use_pulseio=False)
+# For a single-core rpi, pulseio doesn't work because it
+# spawns a realtime busy-waiting process that starves
+# everything else.  Disabling it may work, but in my
+# experience has an extraordinarily high failure rate
+# (hence the layers of retries)
+    dhtDevice = adafruit_dht.DHT22(pin_id, use_pulseio=True)
     for i in range(1,10):
         try:
             temp_c = dhtDevice.temperature
@@ -65,6 +65,7 @@ def dht_to_cw():
             temp_f, humidity = get_values_with_retry(board.D17)
             break
         except TypeError:
+            time.sleep(RETRY_WAIT)
             continue
     MetricData.append({'MetricName': 'trailerTemp', 'Value': temp_f})
     MetricData.append({'MetricName': 'trailerHumidity', 'Value': humidity})
@@ -73,6 +74,7 @@ def dht_to_cw():
             tank_temp_f, tank_humidity = get_values_with_retry(board.D24)
             break
         except TypeError:
+            time.sleep(RETRY_WAIT)
             continue
     MetricData.append({'MetricName': 'tankTemp', 'Value': tank_temp_f})
     MetricData.append({'MetricName': 'tankHumidity', 'Value': tank_humidity})
