@@ -26,3 +26,5 @@ def main():
     MetricData.append({'MetricName': 'garageBRTemp', 'Value': temp_f})
     MetricData.append({'MetricName': 'garageBRHumidity', 'Value': sensor.relative_humidity})
     submit_metrics(MetricData)
+
+main()
