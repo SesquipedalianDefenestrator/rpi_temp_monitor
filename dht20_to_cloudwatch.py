@@ -14,7 +14,7 @@ temp_f = ( sensor.temperature * 9/5) + 32
 
 def submit_metrics(metrics):
     cw = boto3.client('cloudwatch')
-    ret = cw.put_metric_data(Namespace=cw_namespace, MetricData=metrics)
+    ret = cw.put_metric_data(Namespace='house', MetricData=metrics)
     if ret['ResponseMetadata']['HTTPStatusCode'] != 200:
         print("Failed to submit metrics:")
         print(metrics)
